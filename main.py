@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import random
 from matplotlib import pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
 
 textual_numbers = datasets.load_digits().target_names
 print(textual_numbers)
@@ -30,6 +32,17 @@ plt.show()
 X, y = datasets.load_digits(return_X_y=True, as_frame=True)
 
 x_train, x_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.4)
+
+RFclf = RandomForestClassifier()
+RFclf.fit(x_train, y_train)
+
+y_pred = RFclf.predict(x_test)
+
+result = classification_report(y_test, y_pred)
+print("Classification Report:",)
+print (result)
+precision = RFclf.score(x_test, y_test)
+print("Précision : ", precision * 100)
 
 rn = random.randrange(0, 1001)
 
