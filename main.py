@@ -4,7 +4,7 @@
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-# import mahotas
+import mahotas
 import cv2
 import os
 # import h5py
