@@ -68,7 +68,7 @@ for training_name in train_labels:
     current_label = training_name
 
     # loop over the images in each sub-folder
-    for x in range(1,images_per_class+1):
+    for x in range(1, images_per_class+1):
         # get the image file name
         file = dir + "/" + str(x) + ".jpg"
 
