@@ -7,7 +7,7 @@ import numpy as np
 import mahotas
 import cv2
 import os
-# import h5py
+import h5py
 
 # --------------------
 # tunable-parameters
@@ -68,7 +68,7 @@ for training_name in train_labels:
     current_label = training_name
 
     # loop over the images in each sub-folder
-    for x in range(1, images_per_class+1):
+    for x in range(1, images_per_class + 1):
         # get the image file name
         file = dir + "/" + str(x) + ".jpg"
 
@@ -80,8 +80,8 @@ for training_name in train_labels:
         # Global Feature extraction
         ####################################
         fv_hu_moments = fd_hu_moments(image)
-        fv_haralick   = fd_haralick(image)
-        fv_histogram  = fd_histogram(image)
+        fv_haralick = fd_haralick(image)
+        fv_histogram = fd_histogram(image)
 
         ###################################
         # Concatenate global features
@@ -96,3 +96,34 @@ for training_name in train_labels:
 
 print("[STATUS] completed Global Feature Extraction...")
 
+# get the overall feature vector size
+print("[STATUS] feature vector size {}".format(np.array(global_features).shape))
+
+# get the overall training label size
+print("[STATUS] training Labels {}".format(np.array(labels).shape))
+
+# encode the target labels
+targetNames = np.unique(labels)
+le = LabelEncoder()
+target = le.fit_transform(labels)
+print("[STATUS] training labels encoded...")
+
+# scale features in the range (0-1)
+scaler = MinMaxScaler(feature_range=(0, 1))
+rescaled_features = scaler.fit_transform(global_features)
+print("[STATUS] feature vector normalized...")
+
+print("[STATUS] target labels: {}".format(target))
+print("[STATUS] target labels shape: {}".format(target.shape))
+
+# save the feature vector using HDF5
+h5f_data = h5py.File(h5_data, 'w')
+h5f_data.create_dataset('dataset_1', data=np.array(rescaled_features))
+
+h5f_label = h5py.File(h5_labels, 'w')
+h5f_label.create_dataset('dataset_1', data=np.array(target))
+
+h5f_data.close()
+h5f_label.close()
+
+print("[STATUS] end of training..")
