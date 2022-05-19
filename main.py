@@ -11,9 +11,19 @@ print(textual_numbers)
 digits = datasets.load_digits()
 flat_4 = digits.images[4].flatten()
 print(flat_4)
+print(digits.images[4])
 
+
+plt.figure(0, figsize=(3, 3))
+plt.imshow(digits.images[0], cmap=plt.cm.gray_r)
 plt.figure(1, figsize=(3, 3))
-plt.imshow(digits.images[4], cmap=plt.cm.gray_r, interpolation="bessel")
+plt.imshow(digits.images[1], cmap=plt.cm.gray_r)
+print(type(digits.images))
+index = 2
+for digit in digits.images[:12, :]:
+    plt.figure(index, figsize=(3, 3))
+    plt.imshow(digit, cmap=plt.cm.gray_r)
+    index += 1
 
 plt.show()
 
