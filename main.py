@@ -48,7 +48,7 @@ new_number = np.array([[0, 0, 5, 13, 9, 1, 0, 0],
 
 print("Test : ")
 print(x_test[:1])
-#nn_prediction = clf.predict(x_test[:1])
+# nn_prediction = clf.predict(x_test[:1])
 nn_prediction = clf.predict([new_number])
 print(nn_prediction)
 
@@ -59,9 +59,5 @@ precision = RFclf.score(x_test, y_test)
 print("Précision : ", precision * 100)
 
 rn = random.randrange(0, 1001)
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print('PyCharm')
 
 plt.show()
