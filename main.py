@@ -1,63 +1,98 @@
+# -----------------------------------
+# GLOBAL FEATURE EXTRACTION
+# -----------------------------------
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-from sklearn import datasets, model_selection
-import random
-from matplotlib import pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
-from sklearn.neural_network import MLPClassifier
+# import mahotas
+import cv2
+import os
+# import h5py
 
-textual_numbers = datasets.load_digits().target_names
-print(textual_numbers)
+# --------------------
+# tunable-parameters
+# --------------------
+images_per_class = 80
+fixed_size = tuple((500, 500))
+train_path = "dataset/train"
+h5_data = 'output/data.h5'
+h5_labels = 'output/labels.h5'
+bins = 8
 
-digits = datasets.load_digits()
 
-flat_list = []
-for digit in digits.images:
-    flat_list.append(digit.flatten())
+# feature-descriptor-1: Hu Moments
+def fd_hu_moments(image):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    feature = cv2.HuMoments(cv2.moments(image)).flatten()
+    return feature
 
-plt.figure(0, figsize=(3, 3))
-plt.imshow(digits.images[0])
-plt.figure(1, figsize=(3, 3))
-plt.imshow(digits.images[1])
-index = 2
 
-for digit in digits.images[:4, :]:
-    plt.figure(index, figsize=(3, 3))
-    plt.imshow(digit)
-    index += 1
+# feature-descriptor-2: Haralick Texture
+def fd_haralick(image):
+    # convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # compute the haralick texture feature vector
+    haralick = mahotas.features.haralick(gray).mean(axis=0)
+    # return the result
+    return haralick
 
-X, y = datasets.load_digits(return_X_y=True, as_frame=True)
 
-x_train, x_test, y_train, y_test = model_selection.train_test_split(X.values, y, test_size=0.4)
+# feature-descriptor-3: Color Histogram
+def fd_histogram(image, mask=None):
+    # convert the image to HSV color-space
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # compute the color histogram
+    hist = cv2.calcHist([image], [0, 1, 2], None, [bins, bins, bins], [0, 256, 0, 256, 0, 256])
+    # normalize the histogram
+    cv2.normalize(hist, hist)
+    # return the histogram
+    return hist.flatten()
 
-RFclf = RandomForestClassifier()
-RFclf.fit(x_train, y_train)
 
-y_pred = RFclf.predict(x_test)
+# get the training labels
+train_labels = os.listdir(train_path)
 
-clf = MLPClassifier(random_state=1).fit(x_train, y_train)
+# sort the training labels
+train_labels.sort()
+print(train_labels)
 
-new_number = np.array([[0, 0, 5, 13, 9, 1, 0, 0],
-              [0, 0, 13, 15, 10, 15, 5, 0],
-              [0, 3, 15, 2, 0, 9, 11, 0],
-              [0, 4, 11, 0, 0, 6, 10, 0],
-              [0, 0, 0, 12, 10, 9, 8, 0],
-              [0, 0, 0, 0, 0, 12, 10, 0],
-              [0, 0, 0, 1, 4, 12, 6, 0],
-              [0, 0, 0, 11, 10, 5, 0, 0]]).flatten()
+# empty lists to hold feature vectors and labels
+global_features = []
+labels = []
 
-print("Test : ")
-print(x_test[:1])
-# nn_prediction = clf.predict(x_test[:1])
-nn_prediction = clf.predict([new_number])
-print(nn_prediction)
+for training_name in train_labels:
+    # join the training data path and each species training folder
+    dir = os.path.join(train_path, training_name)
 
-result = classification_report(y_test, y_pred)
-print("Classification Report:", )
-print(result)
-precision = RFclf.score(x_test, y_test)
-print("Précision : ", precision * 100)
+    # get the current training label
+    current_label = training_name
 
-rn = random.randrange(0, 1001)
+    # loop over the images in each sub-folder
+    for x in range(1,images_per_class+1):
+        # get the image file name
+        file = dir + "/" + str(x) + ".jpg"
 
-plt.show()
+        # read the image and resize it to a fixed-size
+        image = cv2.imread(file)
+        image = cv2.resize(image, fixed_size)
+
+        ####################################
+        # Global Feature extraction
+        ####################################
+        fv_hu_moments = fd_hu_moments(image)
+        fv_haralick   = fd_haralick(image)
+        fv_histogram  = fd_histogram(image)
+
+        ###################################
+        # Concatenate global features
+        ###################################
+        global_feature = np.hstack([fv_histogram, fv_haralick, fv_hu_moments])
+
+        # update the list of labels and feature vectors
+        labels.append(current_label)
+        global_features.append(global_feature)
+
+    print("[STATUS] processed folder: {}".format(current_label))
+
+print("[STATUS] completed Global Feature Extraction...")
+
