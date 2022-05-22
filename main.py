@@ -12,7 +12,7 @@ import h5py
 # --------------------
 # tunable-parameters
 # --------------------
-images_per_class = 750
+images_per_class = 150
 fixed_size = tuple((650, 650))
 train_path = "dataset/train"
 h5_data = 'output/data.h5'
