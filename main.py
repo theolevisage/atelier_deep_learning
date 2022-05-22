@@ -12,8 +12,8 @@ import h5py
 # --------------------
 # tunable-parameters
 # --------------------
-images_per_class = 120
-fixed_size = tuple((650, 650))
+images_per_class = 750
+fixed_size = tuple((512, 512))
 train_path = "dataset/train"
 h5_data = 'output/data.h5'
 h5_labels = 'output/labels.h5'
@@ -74,23 +74,26 @@ for training_name in train_labels:
 
         # read the image and resize it to a fixed-size
         image = cv2.imread(file)
-        image = cv2.resize(image, fixed_size)
+        if image is not None:
+            image = cv2.resize(image, fixed_size)
+            ####################################
+            # Global Feature extraction
+            ####################################
+            fv_hu_moments = fd_hu_moments(image)
+            fv_haralick = fd_haralick(image)
+            fv_histogram = fd_histogram(image)
 
-        ####################################
-        # Global Feature extraction
-        ####################################
-        fv_hu_moments = fd_hu_moments(image)
-        fv_haralick = fd_haralick(image)
-        fv_histogram = fd_histogram(image)
+            ###################################
+            # Concatenate global features
+            ###################################
+            global_feature = np.hstack([fv_histogram, fv_haralick, fv_hu_moments])
 
-        ###################################
-        # Concatenate global features
-        ###################################
-        global_feature = np.hstack([fv_histogram, fv_haralick, fv_hu_moments])
+            # update the list of labels and feature vectors
+            labels.append(current_label)
+            global_features.append(global_feature)
 
-        # update the list of labels and feature vectors
-        labels.append(current_label)
-        global_features.append(global_feature)
+        else:
+            print(image)
 
     print("[STATUS] processed folder: {}".format(current_label))
 
