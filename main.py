@@ -90,6 +90,7 @@ for training_name in train_labels:
 
             # update the list of labels and feature vectors
             labels.append(current_label)
+            print(f"Mes libellés {labels}")
             global_features.append(global_feature)
 
         else:
