@@ -12,7 +12,7 @@ import h5py
 # --------------------
 # tunable-parameters
 # --------------------
-images_per_class = 750
+images_per_class = 120
 fixed_size = tuple((512, 512))
 train_path = "dataset/train"
 h5_data = 'output/data.h5'
@@ -90,7 +90,6 @@ for training_name in train_labels:
 
             # update the list of labels and feature vectors
             labels.append(current_label)
-            print(f"Mes libellés {labels}")
             global_features.append(global_feature)
 
         else:
